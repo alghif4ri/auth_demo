@@ -51,32 +51,56 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
+// app.post("/register", async (req, res) => {
+//   const { username, password } = req.body;
+//     const hashedPassword = bcrypt.hashSync(password, 10);
+//     const user = new User({
+//       username,
+//       password: hashedPassword,
+//     });
+//   const user = new User({ username, password });
+//   await user.save();
+//   req.session.user_id = user._id;
+//   res.redirect("/");
+// });
+
+// refactor
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  const user = new User({
-    username,
-    password: hashedPassword,
-  });
+  // proses hashing dilakukan di model
+  const user = new User({ username, password });
   await user.save();
+  req.session.user_id = user._id;
   res.redirect("/");
 });
 
-app.get("/login", islogin, (req, res) => {
+app.get("/login", (req, res) => {
   res.render("login");
 });
 
-app.post("/login", islogin, async (req, res) => {
+// app.post("/login", islogin, async (req, res) => {
+//   const { username, password } = req.body;
+//   const user = await User.findOne({ username });
+//   if (user) {
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (isMatch) {
+//       req.session.user_id = user._id;
+//       res.redirect("/admin");
+//     } else {
+//       res.redirect("/login");
+//     }
+//   } else {
+//     res.redirect("/login");
+//   }
+// });
+
+// refactor
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ username });
+  const user = await User.findByCredentials(username, password );
   if (user) {
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch) {
-      req.session.user_id = user._id;
-      res.redirect("/admin");
-    } else {
-      res.redirect("/login");
-    }
+    req.session.user_id = user._id;
+    res.redirect("/admin");
   } else {
     res.redirect("/login");
   }
